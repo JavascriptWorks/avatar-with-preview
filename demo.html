@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Avatar Component Demo</title>
+    <script src="http://fb.me/react-0.12.1.min.js"></script>
+    <script src="http://fb.me/JSXTransformer-0.12.1.js"></script>
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.map.js"></script>
+</head>
+<body>
+  <h1>Avatar Component Demo - A Utility UI Component in ReactJS</h1>
+  <div id="demo"></div>
+</body>
+
+<script type="text/jsx">
+/** @jsx React.DOM */
+
+//This code below is a reproduction of the component in avatar.js.jsx
+var Avatar = React.createClass({
+  getDefaultProps: function() {
+    return {
+      height: 150,
+      width: 150,
+      size: 50
+    };
+  },
+
+  //To show image preview, when a file is passed to the input field,
+  //retrieve the contents as a base64-encoded data URI
+  loadFile: function(event) {
+    var maxHeight = this.props.height,
+        maxWidth = this.props.width,
+        maxSize = this.props.size;
+    var reader = new FileReader(),
+        image  = new Image(),
+        output = document.getElementById('imgPreview'),
+        file = event.target.files[0];
+    reader.onload = function() {
+      var errMessage = "Oops!, something has gone awry.";
+      image.src = reader.result;
+      image.onload = function() {
+        var height = this.height,
+            width = this.width,
+            name = file.name,
+            size = ~~(file.size/1024); //in KBs
+        if (height>maxHeight || width>maxWidth) {
+          this.errMessage = "The height and width of an image should NOT be greater than " +
+                            maxHeight + "px and " + maxWidth + "px.";
+          $(this).trigger('error');
+          return;
+        }
+        if (size > maxSize) {
+          this.errMessage = "The size of image should NOT be greater than " + maxSize + "kb.";
+          $(this).trigger('error');
+          return;
+        }
+        output.src = reader.result;
+      };
+      image.onerror= function(event) {
+        output.src = '#';
+        document.getElementById('imgInput').value = ''; //Clear Input Value
+        if(this.errMessage) {
+          alert(this.errMessage);
+        } else {
+          alert("Please upload an image file.");
+        }
+      };
+    };
+    if(event.target.files.length>0) {
+      var imgFile = event.target.files[0];
+      reader.readAsDataURL(imgFile);
+    } else {
+      output.src = '#';
+    }
+  },
+
+  render: function() {
+    return (
+      <div class='gravatarPlaceholder'>
+        <img id="imgPreview" src="#" class="img-r­ounded img-r­esp­onsive" alt="Gravatar Image Preview" />
+        <input type="file" id="imgInput" onChange={this.loadFile} />
+      </div>
+    );
+  }
+});
+
+//Here is where we create and render the componend that is defined earlier
+React.render(<Avatar />, document.getElementById('demo'));
+</script>
+</html>
